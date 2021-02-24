@@ -1,31 +1,44 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 
+import { OneService } from './one.service';
+
 describe('AppComponent', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [AppComponent],
-    }).compileComponents();
+  let componentUnderTest: AppComponent;
+  let oneServiceSpy: any;
+  let actualResult: any;
+  let mockService;
+
+  beforeEach(() => {
+    mockService = {
+      get a() {
+        return 'a';
+      },
+    };
+    Object.defineProperty(mockService, 'myGetter', {
+      get() {
+        return 'bla';
+      },
+      set(_) {},
+      configurable: true,
+    });
+    TestBed.configureTestingModule({
+      providers: [AppComponent, { provide: OneService, useValue: mockService }],
+    });
+
+    componentUnderTest = TestBed.inject(AppComponent);
+    oneServiceSpy = TestBed.inject<any>(OneService);
+
+    actualResult = undefined;
   });
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
+  it('test getter', () => {
+    actualResult = componentUnderTest.testGetter();
+    const expectedResult = mockService.myGetter;
 
-  it(`should have as title 'app'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('app');
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement;
-    expect(compiled.querySelector('h1').textContent).toContain(
-      'Welcome to app!'
-    );
+    expect(actualResult).toEqual(expectedResult);
   });
 });
